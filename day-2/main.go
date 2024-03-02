@@ -83,9 +83,9 @@ func main() {
 	if len(os.Args) < 4 {
 		log.Fatal("Usage: <exec> r g b")
 	}
-	// rCount, _ := strconv.Atoi(os.Args[1])
-	// gCount, _ := strconv.Atoi(os.Args[2])
-	// bCount, _ := strconv.Atoi(os.Args[3])
+	rCount, _ := strconv.Atoi(os.Args[1])
+	gCount, _ := strconv.Atoi(os.Args[2])
+	bCount, _ := strconv.Atoi(os.Args[3])
 
 	recordFile, err := os.Open("game.record")
 	if err != nil {
@@ -94,7 +94,7 @@ func main() {
 	defer recordFile.Close()
 
 	reader := bufio.NewReader(recordFile)
-	// sum := 0
+	sum := 0
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -103,5 +103,12 @@ func main() {
 
 		gameId, rMax, gMax, bMax := parseGame(line)
 		fmt.Println(gameId, rMax, gMax, bMax)
+
+		if (rMax > rCount) || (gMax > gCount) || (bMax > bCount) {
+			fmt.Println("Game not possible!")
+			continue
+		}
+		sum += gameId
 	}
+	fmt.Println("Sum of Game IDs: ", sum)
 }
