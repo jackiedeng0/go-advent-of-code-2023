@@ -30,7 +30,34 @@ func symbolIndicesInLine(line string) map[int]bool {
 	return lineMap
 }
 
-func symbolIsAdjacent(row int, colStart int, colEnd int, symbolMap map[int]bool)
+// Returns whether there is any symbol adjacent to the location of a number
+func symbolIsAdjacent(row int, lastRow int, startCol int, endCol int,
+	symbolMap map[int]map[int]bool) bool {
+	// Check current row
+	// Note that if startCol is 0 or endCol is the line length, this makes an
+	// out of bounds access but go maps are zero initialized so this is
+	// actually ok
+	if symbolMap[row][startCol-1] || symbolMap[row][endCol] {
+		return true
+	}
+	if row >= 1 {
+		// Check row above
+		for c := startCol - 1; c <= endCol; c++ {
+			if symbolMap[row-1][c] {
+				return true
+			}
+		}
+	}
+	if row < lastRow {
+		// Check row below
+		for c := startCol - 1; c <= endCol; c++ {
+			if symbolMap[row+1][c] {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 func main() {
 	// Parse symbol locations as a row-indexed map of column-indexed maps
@@ -52,6 +79,7 @@ func main() {
 		symbolsMap[i] = symbolIndicesInLine(line)
 		i++
 	}
+	totalRows := i
 
 	_, err = recordFile.Seek(0, 0)
 	if err != nil {
@@ -60,7 +88,7 @@ func main() {
 
 	// Parse numbers in line and check against symbol locations
 	i = 0
-	// sum := 0
+	sum := 0
 	re := regexp.MustCompile(`\d+`)
 	for {
 		line, err := reader.ReadString('\n')
@@ -69,17 +97,16 @@ func main() {
 		}
 		foundLocs := re.FindAllStringIndex(line, -1)
 		for _, loc := range foundLocs {
-			if (symbolsAdjacent())
-			number, err := strconv.Atoi(line[loc[0]:loc[1]])
+			if symbolIsAdjacent(i, totalRows, loc[0], loc[1], symbolsMap) {
+				number, err := strconv.Atoi(line[loc[0]:loc[1]])
+				if err != nil {
+					panic(err)
+				}
+				sum += number
+			}
 		}
 		i++
 	}
 
-	j, _ := strconv.Atoi("32i")
-	fmt.Printf("%d\n", j+1)
-	//	numStart, numEnd
-	//	// Check rows i - 1 to i + 1 from numStart - 1 to numEnd + 1
-	//	sum += strconv.Atoi(s)
-	//}
+	fmt.Printf("Sum: %d\n", sum)
 }
-
